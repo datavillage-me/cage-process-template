@@ -22,8 +22,8 @@ The root of the repo must contain a `datavillage.yaml` file with following prope
 | variable | description |
 |----------|-------------|
 | `env` |  the type of environment, i.e. pip, npm, yarn, bash, ...    |
-| `script` | the build script to use for the build (needed for npm or yarn, not for pip)      |
-| `entry` | the entry point to the process, i.e. the executable file (a `.py` file, a `.js` file that may result from the npm build, ... ) |
+| `script` | the commands (list) to use for the setup/build (needed for npm or yarn, not for pip), for instance "pip install ..."      |
+| `entry` | the single command to execute at start of the container, for instance "python index.py" |
 
 Example for a node environment :
 ```
