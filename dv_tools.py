@@ -89,9 +89,8 @@ class RedisQueue:
             if message:
                 if DEBUG:
                     print(f'Received message...')
-                break
-        evt = json.loads(message.get('data'))
-        return evt
+                return json.loads(message.get('data'))
+        return None
 
     def listen(self, processor, timeout=3600):
         """
