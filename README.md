@@ -27,9 +27,10 @@ The root of the repo must contain a `datavillage.yaml` file with following prope
 
 Example for a node environment :
 ```
-env: npm
-script: build
-entry: dist/index.js
+env: python
+script: 
+  - pip install -r requirements.txt
+entry: python listener.py
 ```  
 
 ## Deployment process
