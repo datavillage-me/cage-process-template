@@ -1,23 +1,31 @@
 import dv_tools
 
+import logging
 
 def processEvent(evt):
     """
     Process an incoming event
     """
 
-    client = dv_tools.Client()
+    try:
+        logging.info(f'Processing event {evt}')
 
-    # Use userIds prvided in the event, or get all active users for this application
-    user_ids = evt.get('userIds') if 'userIds' in evt else client.getUsers()
+        client = dv_tools.Client()
 
-    for userId in user_ids:
-        try:
-            # retrieve data graph for user
-            user_data = client.getData(userId)
+        # Use userIds provided in the event, or get all active users for this application
+        user_ids = evt.get('userIds') if 'userIds' in evt else client.getUsers()
 
-            print(f'{len(user_data)} statements for user {userId}')
-        except Exception as err:
-            print(f'Failed to process user {userId} : {err}')
+        for userId in user_ids:
+            try:
+                # retrieve data graph for user
+                user_data = client.getData(userId)
+
+                print(f'{len(user_data)} statements for user {userId}')
+
+                client.writeResults(userId, "inferences", f'<https://datavillage.me/{userId}> <https://datavillage.me/count> {len(user_data)}')
+            except Exception as err:
+                logging.warning(f'Failed to process user {userId} : {err}')
+    except Exception as err:
+        logging.error(f'Failed processing event: {err}')
 
 

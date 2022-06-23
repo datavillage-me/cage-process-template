@@ -3,15 +3,17 @@
 
 # Read env variables from a local .env file, to fake the variables normally provided by the cage container
 import dotenv
-dotenv.load_dotenv('.env.test')
+dotenv.load_dotenv('.env.testphd')
 
 import os
 import unittest
 import process
 import dv_tools
 import json
+import logging
 
 DEBUG = os.environ.get('DEBUG', '').lower() == 'true'
+logging.basicConfig(filename='events.log', level=logging.DEBUG if DEBUG else logging.WARNING, format='%(asctime)s - %(levelname)s - %(message)s')
 
 class Test(unittest.TestCase):
 

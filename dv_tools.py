@@ -1,12 +1,12 @@
+from typing import Literal
+
 import rdflib
 import requests
 import redis
 import time
 import os
 import json
-
-DEBUG = os.environ.get('DEBUG', '').lower() == 'true'
-
+import logging
 
 class Client:
     """
@@ -46,12 +46,26 @@ class Client:
             # Currently no other format than turtle is supported
             raise Exception(f'Unknown format {format}')
 
-    def request(self, path: str):
-        url = f'{self.baseUrl}{path}'
-        if DEBUG:
-            print(f'[HTTP GET] {url}')
+    def writeResults(self, userId: str, filename: str, content: str):
+        """
+        Writes the results into the pod.
+        """
 
-        resp = requests.get(url, headers={"Authorization":f"Bearer {self.token}"})
+        # currently only 'inferences' and 'explains' are supported
+        if not filename in ['inferences', 'explains']:
+            raise Exception("Unsupported result file name: " + filename)
+
+        self.request(f'/clients/{self.clientId}/applications/{self.appId}/activeUsers/{userId}/{filename}', method="PUT", data=content)
+
+    def request(self, path: str, method: Literal['GET', 'POST', 'PUT', 'DELETE'] = "GET", format: str = None, data=None):
+        url = f'{self.baseUrl}{path}'
+        logging.debug(f'[HTTP {method}] {url}')
+
+        headers = {"Authorization":f"Bearer {self.token}"}
+        if format:
+            headers['Content-Type'] = format
+
+        resp = requests.request(method, url, headers=headers, data=data)
         if not resp.ok:
             raise Exception(f'DV Request failed on {path}: {resp.text}')
 
@@ -87,8 +101,7 @@ class RedisQueue:
         while time.time() < stop_time:
             message = self.pubsub.get_message(timeout=stop_time - time.time())
             if message:
-                if DEBUG:
-                    print(f'Received message...')
+                logging.debug(f'Received message...')
                 return json.loads(message.get('data'))
         return None
 
@@ -106,11 +119,9 @@ class RedisQueue:
         # argument is given, regardless of 'ignore_subscribe_messages'. (cf https://github.com/redis/redis-py/issues/733)
         # work around this by listening until a truthy object is returned, or stop_time is reached
         while time.time() < stop_time:
-            if DEBUG:
-                print(f'Waiting for message...')
+            logging.debug(f'Waiting for message...')
             message = self.pubsub.get_message(timeout=stop_time - time.time())
             if message:
-                if DEBUG:
-                    print(f'Processing message...')
+                logging.debug(f'Processing message...')
                 evt = json.loads(message.get('data'))
                 processor(evt)
