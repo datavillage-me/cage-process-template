@@ -3,8 +3,8 @@ import process
 import logging
 import os
 
-DEBUG = os.environ.get('DEBUG', '').lower() == 'true'
-logging.basicConfig(filename='events.log', level=logging.DEBUG if DEBUG else logging.WARNING, format='%(asctime)s - %(levelname)s - %(message)s')
+LOGLEVEL = os.environ.get('LOGLEVEL', 'INFO')
+logging.basicConfig(filename='listener.log', level=LOGLEVEL, format='%(asctime)s - %(levelname)s - %(message)s')
 
 DAEMON = False
 

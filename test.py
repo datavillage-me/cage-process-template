@@ -3,8 +3,7 @@
 
 # Read env variables from a local .env file, to fake the variables normally provided by the cage container
 import dotenv
-dotenv.load_dotenv('.env.testphd')
-
+dotenv.load_dotenv('.env.test')
 import os
 import unittest
 import process
