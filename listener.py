@@ -4,7 +4,8 @@ import logging
 import os
 
 LOGLEVEL = os.environ.get('LOGLEVEL', 'INFO')
-logging.basicConfig(filename='listener.log', level=LOGLEVEL, format='%(asctime)s - %(levelname)s - %(message)s')
+# let the log go to stdout, as it will be captured by the cage operator
+logging.basicConfig(level=LOGLEVEL, format='%(asctime)s - %(levelname)s - %(message)s') # filename='listener.log'
 
 DAEMON = False
 
