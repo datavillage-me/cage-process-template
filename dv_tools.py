@@ -1,22 +1,32 @@
+import json
+import logging
+import os
+import time
 from typing import Literal
 
 import rdflib
-import requests
 import redis
-import time
-import os
-import json
-import logging
+import requests
+
 
 class Client:
     """
     Remote HTTP client that helps accessing the Datavillage service APIs.
     It is instanciated for a given client and application.
     """
-    def __init__(self, token: str = None, app_id: str = None, client_id: str = None, base_url: str = None):
+
+    def __init__(
+        self,
+        token: str = None,
+        app_id: str = None,
+        client_id: str = None,
+        base_url: str = None,
+    ):
         token = token if token is not None else os.environ.get("DV_TOKEN")
         app_id = app_id if app_id is not None else os.environ.get("DV_APP_ID")
-        client_id = client_id if client_id is not None else os.environ.get("DV_CLIENT_ID")
+        client_id = (
+            client_id if client_id is not None else os.environ.get("DV_CLIENT_ID")
+        )
         base_url = base_url if base_url is not None else os.environ.get("DV_URL")
 
         self.token: str = token
@@ -28,23 +38,27 @@ class Client:
         """
         Returns the list of active users for this application
         """
-        userIds = self.request(f'/clients/{self.clientId}/applications/{self.appId}/activeUsers')
+        userIds = self.request(
+            f"/clients/{self.clientId}/applications/{self.appId}/activeUsers"
+        )
 
         return userIds
 
-    def getData(self, userId: str, format: str = 'turtle'):
+    def getData(self, userId: str, format: str = "turtle"):
         """
         Returns the available data for a given user.
         If the format is turtle (default), the returned value is an rdflib graph.
         """
-        raw_data = self.request(f'/clients/{self.clientId}/applications/{self.appId}/activeUsers/{userId}/data')
-        if (format == 'turtle'):
+        raw_data = self.request(
+            f"/clients/{self.clientId}/applications/{self.appId}/activeUsers/{userId}/data"
+        )
+        if format == "turtle":
             rdf_data = rdflib.Graph()
             rdf_data.parse(data=raw_data, format=format)
             return rdf_data
         else:
             # Currently no other format than turtle is supported
-            raise Exception(f'Unknown format {format}')
+            raise Exception(f"Unknown format {format}")
 
     def writeResults(self, userId: str, filename: str, content: str):
         """
@@ -52,24 +66,34 @@ class Client:
         """
 
         # currently only 'inferences' and 'explains' are supported
-        if not filename in ['inferences', 'explains']:
+        if not filename in ["inferences", "explains"]:
             raise Exception("Unsupported result file name: " + filename)
 
-        self.request(f'/clients/{self.clientId}/applications/{self.appId}/activeUsers/{userId}/{filename}', method="PUT", data=content)
+        self.request(
+            f"/clients/{self.clientId}/applications/{self.appId}/activeUsers/{userId}/{filename}",
+            method="PUT",
+            data=content,
+        )
 
-    def request(self, path: str, method: Literal['GET', 'POST', 'PUT', 'DELETE'] = "GET", format: str = None, data=None):
-        url = f'{self.baseUrl}{path}'
-        logging.debug(f'[HTTP {method}] {url}')
+    def request(
+        self,
+        path: str,
+        method: Literal["GET", "POST", "PUT", "DELETE"] = "GET",
+        format: str = None,
+        data=None,
+    ):
+        url = f"{self.baseUrl}{path}"
+        logging.debug(f"[HTTP {method}] {url}")
 
-        headers = {"Authorization":f"Bearer {self.token}"}
+        headers = {"Authorization": f"Bearer {self.token}"}
         if format:
-            headers['Content-Type'] = format
+            headers["Content-Type"] = format
 
         resp = requests.request(method, url, headers=headers, data=data)
         if not resp.ok:
-            raise Exception(f'DV Request failed on {path}: {resp.text}')
+            raise Exception(f"DV Request failed on {path}: {resp.text}")
 
-        if resp.headers['Content-Type'] == 'application/json':
+        if resp.headers["Content-Type"] == "application/json":
             return resp.json()
         else:
             return resp.text
@@ -79,13 +103,17 @@ class RedisQueue:
     """
     Client to the local redis queue exposed in the cage.
     """
-    def __init__(self, host=None, port=None):
+
+    def __init__(self, host=None, port=None, consumer_name="consummer-0"):
         host = host if host is not None else os.environ.get("REDIS_SERVICE_HOST")
         port = port if port is not None else os.environ.get("REDIS_SERVICE_PORT")
 
-        self.redis = redis.Redis(host, port, db=0) if port is not None else redis.Redis(host, db=0)
-        self.pubsub = self.redis.pubsub(ignore_subscribe_messages=True)
-        self.pubsub.subscribe("dv")
+        self.consumer_name = consumer_name
+        self.redis = (
+            redis.Redis(host, port, db=0)
+            if port is not None
+            else redis.Redis(host, db=0)
+        )
 
     def listenOnce(self, timeout=120):
         """
@@ -93,16 +121,18 @@ class RedisQueue:
         :param timeout: timeout delay in seconds
         :return: the received message, or None
         """
-        stop_time = time.time() + timeout
-
-        # there is a bug in the redis-py client, causing get_message to return None for subscribe messages when a timeout
-        # argument is given, regardless of 'ignore_subscribe_messages'. (cf https://github.com/redis/redis-py/issues/733)
-        # work around this by listening until a truthy object is returned, or stop_time is reached
-        while time.time() < stop_time:
-            message = self.pubsub.get_message(timeout=stop_time - time.time())
-            if message:
-                logging.debug(f'Received message...')
-                return json.loads(message.get('data'))
+        message = self.redis.xreadgroup(
+            "consummers",
+            self.consumer_name,
+            {"events": ">"},
+            noack=True,
+            count=1,
+            block=timeout * 1000,
+        )
+        if message:
+            msg_id, msg_data = message[0][1][0]
+            logging.debug(f"Received message {msg_id}...")
+            return msg_data
         return None
 
     def listen(self, processor, timeout=3600):
@@ -113,15 +143,6 @@ class RedisQueue:
         :param timeout: timeout in seconds
         :return:
         """
-        stop_time = time.time() + timeout
-
-        # there is a bug in the redis-py client, causing get_message to return None for subscribe messages when a timeout
-        # argument is given, regardless of 'ignore_subscribe_messages'. (cf https://github.com/redis/redis-py/issues/733)
-        # work around this by listening until a truthy object is returned, or stop_time is reached
-        while time.time() < stop_time:
-            logging.debug(f'Waiting for message...')
-            message = self.pubsub.get_message(timeout=stop_time - time.time())
-            if message:
-                logging.debug(f'Processing message...')
-                evt = json.loads(message.get('data'))
-                processor(evt)
+        evt = self.listenOnce(timeout)
+        if evt:
+            processor(evt)
