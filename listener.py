@@ -9,7 +9,7 @@ LOGLEVEL = os.environ.get("LOGLEVEL", "DEBUG")
 logging.basicConfig(
     level=LOGLEVEL, format="%(asctime)s - %(levelname)s - %(message)s"
 )  # filename='listener.log'
-logging.getLogger().addHandler(logging.StreamHandler())
+#logging.getLogger().addHandler(logging.StreamHandler())
 
 DAEMON = False
 

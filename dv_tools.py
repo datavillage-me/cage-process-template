@@ -131,9 +131,7 @@ class RedisQueue:
         )
         if messages:
             message = [
-                {"msg_id": msg_id}
-                | json.loads(msg_data.pop("json_data", "{}"))
-                | msg_data
+                json.loads(msg_data) | {"msg_id": msg_id.decode()}
                 for msg_id, msg_data in messages[0][1]
             ][0]
             msg_id = message["msg_id"]
