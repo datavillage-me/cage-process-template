@@ -130,7 +130,12 @@ class RedisQueue:
             block=timeout * 1000,
         )
         if messages:
-            message = [{"msg_id": msg_id} | msg_data for msg_id, msg_data in messages[0][1]][0]
+            message = [
+                {"msg_id": msg_id}
+                | json.loads(msg_data.pop("json_data", "{}"))
+                | msg_data
+                for msg_id, msg_data in messages[0][1]
+            ][0]
             msg_id = message["msg_id"]
             logging.debug(f"Received message {msg_id}...")
             return message

@@ -4,7 +4,7 @@ import os
 import dv_tools
 import process
 
-LOGLEVEL = os.environ.get("LOGLEVEL", "INFO")
+LOGLEVEL = os.environ.get("LOGLEVEL", "DEBUG")
 # let the log go to stdout, as it will be captured by the cage operator
 logging.basicConfig(
     level=LOGLEVEL, format="%(asctime)s - %(levelname)s - %(message)s"
