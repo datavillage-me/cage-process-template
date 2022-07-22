@@ -131,8 +131,7 @@ class RedisQueue:
         )
         if messages:
             message = [
-                json.loads(msg_data) | {"msg_id": msg_id.decode()}
-                for msg_id, msg_data in messages[0][1]
+                json.loads(msg_data.get(b"msg_data", "{}")) | {"msg_id": msg_id.decode()} for msg_id, msg_data in messages[0][1]
             ][0]
             msg_id = message["msg_id"]
             logging.debug(f"Received message {msg_id}...")
