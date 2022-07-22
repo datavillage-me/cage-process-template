@@ -3,26 +3,33 @@
 
 # Read env variables from a local .env file, to fake the variables normally provided by the cage container
 import dotenv
-dotenv.load_dotenv('.env.test')
-import os
-import unittest
-import process
-import dv_tools
+
+dotenv.load_dotenv(".env.test")
 import json
 import logging
+import os
+import unittest
 
-DEBUG = os.environ.get('DEBUG', '').lower() == 'true'
-logging.basicConfig(filename='events.log', level=logging.DEBUG if DEBUG else logging.WARNING, format='%(asctime)s - %(levelname)s - %(message)s')
+import dv_tools
+import process
+
+DEBUG = os.environ.get("DEBUG", "").lower() == "true"
+logging.basicConfig(
+    filename="events.log",
+    level=logging.DEBUG if DEBUG else logging.WARNING,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+)
+logging.getLogger().addHandler(logging.StreamHandler())
+
 
 class Test(unittest.TestCase):
-
     def test_process(self):
         """
         Try the process on a single user configured in the test .env file, without going through the redis queue
         """
         test_event = {
-            'userIds': [os.environ["TEST_USER"]],
-            'trigger': 'full',
+            "userIds": [os.environ["TEST_USER"]],
+            "trigger": "full",
             # 'jobId': None,
         }
 
@@ -34,8 +41,8 @@ class Test(unittest.TestCase):
         """
 
         test_event = {
-            'userIds': [os.environ["TEST_USER"]],
-            'trigger': 'full',
+            "userIds": [os.environ["TEST_USER"]],
+            "trigger": "full",
             # 'jobId': None,
         }
 
@@ -54,8 +61,8 @@ class Test(unittest.TestCase):
         """
 
         test_event = {
-            'userIds': [os.environ["TEST_USER"]],
-            'trigger': 'full',
+            "userIds": [os.environ["TEST_USER"]],
+            "trigger": "full",
             # 'jobId': None,
         }
 

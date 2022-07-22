@@ -121,7 +121,7 @@ class RedisQueue:
         :param timeout: timeout delay in seconds
         :return: the received message, or None
         """
-        message = self.redis.xreadgroup(
+        messages = self.redis.xreadgroup(
             "consummers",
             self.consumer_name,
             {"events": ">"},
@@ -129,10 +129,11 @@ class RedisQueue:
             count=1,
             block=timeout * 1000,
         )
-        if message:
-            msg_id, msg_data = message[0][1][0]
+        if messages:
+            message = [{"msg_id": msg_id} | msg_data for msg_id, msg_data in messages[0][1]][0]
+            msg_id = message["msg_id"]
             logging.debug(f"Received message {msg_id}...")
-            return msg_data
+            return message
         return None
 
     def listen(self, processor, timeout=3600):

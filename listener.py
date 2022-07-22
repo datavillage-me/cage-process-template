@@ -1,11 +1,15 @@
-import dv_tools
-import process
 import logging
 import os
 
-LOGLEVEL = os.environ.get('LOGLEVEL', 'INFO')
+import dv_tools
+import process
+
+LOGLEVEL = os.environ.get("LOGLEVEL", "INFO")
 # let the log go to stdout, as it will be captured by the cage operator
-logging.basicConfig(level=LOGLEVEL, format='%(asctime)s - %(levelname)s - %(message)s') # filename='listener.log'
+logging.basicConfig(
+    level=LOGLEVEL, format="%(asctime)s - %(levelname)s - %(message)s"
+)  # filename='listener.log'
+logging.getLogger().addHandler(logging.StreamHandler())
 
 DAEMON = False
 
@@ -21,4 +25,3 @@ else:
     event = rq.listenOnce()
     if event:
         process.processEvent(event)
-
