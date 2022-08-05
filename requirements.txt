@@ -1,4 +1,1 @@
-rdflib
-python-dotenv
-requests
-redis
+git+ssh://git@github.com/datavillage-me/dv-utils@main#egg=dv-utils
