@@ -1,4 +1,4 @@
 env: python
 script: 
   - pip install -r requirements.txt
-entry: python -m dv_utils
+entry: python index.py
