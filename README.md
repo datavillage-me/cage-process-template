@@ -11,9 +11,8 @@ Apart from this file, this repo contains :
 |----------|-------------|
 | `datavillage.yaml` | __[mandatory]__ the config that describes how the project should be built and executed in the cage (see below) |
 | `requirements.txt` | the python dependencies to install, as this is a python project |
-| `listener.py` | the entry point executable to start the process, as declared in `datavillage.yaml`. In this example, it waits for one message on the local redis queue, processes it with `process.py`, then exits |
+| `index.py` | the entry point executable to start the process, as declared in `datavillage.yaml`. In this example, it waits for one message on the local redis queue, processes it with `process.py`, then exits |
 | `process.py` | the code that actually processes incoming events |
-| `dv_tools.py` | a set of helper methods to interact with the Datavillage platform |
 | `test.py` | some local tests |
 
 ## Config file
@@ -30,7 +29,7 @@ Example for a node environment :
 env: python
 script: 
   - pip install -r requirements.txt
-entry: python listener.py
+entry: python index.py
 ```  
 
 ## Deployment process
