@@ -30,7 +30,7 @@ def event_processor(evt: dict):
             try:
 
                 # retrieve data graph for user
-                user_data = client.get_data(user_id)
+                user_data = client.get_data(user_id) or {}
 
                 logger.info(f"{len(user_data)} statements for user {user_id}")
 
