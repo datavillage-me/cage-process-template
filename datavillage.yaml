@@ -1,4 +1,0 @@
-env: python
-script: 
-  - pip install -r requirements.txt
-entry: python index.py

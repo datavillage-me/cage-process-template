@@ -9,46 +9,22 @@ Apart from this file, this repo contains :
 
 | | |
 |----------|-------------|
-| `datavillage.yaml` | __[mandatory]__ the config that describes how the project should be built and executed in the cage (see below) |
 | `requirements.txt` | the python dependencies to install, as this is a python project |
 | `index.py` | the entry point executable to start the process, as declared in `datavillage.yaml`. In this example, it waits for one message on the local redis queue, processes it with `process.py`, then exits |
 | `process.py` | the code that actually processes incoming events |
 | `test.py` | some local tests |
-
-## Config file
-The root of the repo must contain a `datavillage.yaml` file with following properties :
-
-| variable | description |
-|----------|-------------|
-| `env` |  the type of environment, i.e. pip, npm, yarn, bash, ...    |
-| `script` | the commands (list) to use for the setup/build (needed for npm or yarn, not for pip), for instance "pip install ..."      |
-| `entry` | the single command to execute at start of the container, for instance "python index.py" |
-
-Example for a node environment :
-```
-env: python
-script: 
-  - pip install -r requirements.txt
-entry: python index.py
-```  
+| `Dockerfile` | a dockerfile to bundle the project and it's dependencies into a self contained docker image |
+| `.github/workflows/release_docker_image.yaml` | sample code to build and publish the docker image via github actions |
 
 ## Deployment process
-What happens when such a repo is deployed in the cage ?
+What happens when such a repo is pushed on a github repository ?
 
-### pip
-If a `requirements.txt` is present, the deploying process first executes
-```
-pip install -r requirements.txt
-```
-
-If a `setup.py` or `pyproject.toml` file is found, it executes
-```
-pip install -e .
-```
+The dockerfile is being used to build a docker image that is then published on the github container registry.
+You can then refer to this docker image via its registry address to make the data cage download and run it in a confidential environment
 
 ## Execution process
 
-When starting the process as defined in the `entry` config variable, the following environment variables are made available to the executable :
+When starting the docker container, the following environment variables are made available :
  
 | variable | description |
 |----------|-------------|
