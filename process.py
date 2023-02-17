@@ -25,8 +25,10 @@ def event_processor(evt: dict):
 
         evt_type =evt.get("type", "")
         if(evt_type == "QUOTE"):
+           logger.info(f"use the update quote event processor")
            update_quote_event_processor(evt)
         else:
+           logger.info(f"Unhandled message type, use the generic event processor")
            generic_event_processor(evt)
 
     # pylint: disable=broad-except
@@ -89,6 +91,7 @@ def update_quote_event_processor(evt: dict):
 <https://www.google.com/finance/quote/{r["exchange"]}:{r["symbol"]}> <https://schema.org/price> "{r["price"]}"^^<http://www.w3.org/2001/XMLSchema#float> .
 <https://www.google.com/finance/quote/{r["exchange"]}:{r["symbol"]}> <https://schema.org/volume> "{r["volume"]}"^^<http://www.w3.org/2001/XMLSchema#float> .
    """ for r in stocks.reset_index().to_dict("records")])
+   logger.info(f"Generated RDF content:\n{rdf_content}")
 
    # Use userIds provided in the event, or get all active users for this application
    user_ids = evt.get("userIds") if "userIds" in evt else client.get_users()
