@@ -43,7 +43,7 @@ def generic_event_processor(evt: dict):
    client = Client()
 
    # Use userIds provided in the event, or get all active users for this application
-   user_ids = evt.get("userIds") if "userIds" in evt else client.get_users()
+   user_ids = evt.get("userIds", []) or client.get_users()   
 
    logger.info(f"Processing {len(user_ids)} users")
    for user_id in user_ids:
@@ -98,7 +98,7 @@ def update_quote_event_processor(evt: dict):
    logger.info(f"Generated RDF content:\n{rdf_content}")
 
    # Use userIds provided in the event, or get all active users for this application
-   user_ids = evt.get("userIds") if "userIds" in evt else client.get_users()
+   user_ids = evt.get("userIds",[]) or client.get_users()
 
    # Save the stock quotes in the data vault of all the users
    logger.info(f"Processing {len(user_ids)} users")
