@@ -78,8 +78,12 @@ def update_quote_event_processor(evt: dict):
    stock_response = requests.get(f"https://financialmodelingprep.com/api/v3/quote-short/{symbols}?apikey={FMP_API_KEY}")
    stock_quotes = stock_response.json()
 
-   # merge quotes with symbols in a unified dataframe
+   # merge quotes with symbols in a unified dataframe and possibly save it to file
    stocks = stocks.join(pd.DataFrame(stock_quotes).set_index("symbol") )
+   try:
+       stocks.to_excel("/resources/outputs/stocks.xlsx")
+   except:
+      pass
 
    # prepare rdf file with the quotes following schema.org onthology
    rdf_content = "".join([f"""
