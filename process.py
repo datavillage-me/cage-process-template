@@ -23,11 +23,11 @@ def event_processor(evt: dict):
     try:
         logger.info(f"Processing event {evt}")
 
-    evt_type =evt.get("type", "")
-    if(evt_type == "QUOTE"):
-        update_quote_event_processor(evt)
-    else:
-        generic_event_processor(evt)
+        evt_type =evt.get("type", "")
+        if(evt_type == "QUOTE"):
+           update_quote_event_processor(evt)
+        else:
+           generic_event_processor(evt)
 
     # pylint: disable=broad-except
     except Exception as err:
