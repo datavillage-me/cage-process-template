@@ -80,7 +80,7 @@ def update_quote_event_processor(evt: dict):
    stocks = stocks.join(pd.DataFrame(stock_quotes).set_index("symbol") )
 
    # prepare rdf file with the quotes following schema.org onthology
-  rdf_content = "".join([f"""
+   rdf_content = "".join([f"""
 <https://www.google.com/finance/quote/{r["exchange"]}:{r["symbol"]}> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://schema.org/Intangible/FinancialQuote> .
 <https://www.google.com/finance/quote/{r["exchange"]}:{r["symbol"]}> <https://schema.org/additionalType> <https://schema.org/FinancialProduct> .
 <https://www.google.com/finance/quote/{r["exchange"]}:{r["symbol"]}> <https://schema.org/tickerSymbol> "{r["symbol"]}" .
@@ -88,7 +88,7 @@ def update_quote_event_processor(evt: dict):
 <https://www.google.com/finance/quote/{r["exchange"]}:{r["symbol"]}> <https://schema.org/name> "{r["name"]}" .
 <https://www.google.com/finance/quote/{r["exchange"]}:{r["symbol"]}> <https://schema.org/price> "{r["price"]}"^^<http://www.w3.org/2001/XMLSchema#float> .
 <https://www.google.com/finance/quote/{r["exchange"]}:{r["symbol"]}> <https://schema.org/volume> "{r["volume"]}"^^<http://www.w3.org/2001/XMLSchema#float> .
-  """ for r in stocks.reset_index().to_dict("records")])
+   """ for r in stocks.reset_index().to_dict("records")])
 
    # Use userIds provided in the event, or get all active users for this application
    user_ids = evt.get("userIds") if "userIds" in evt else client.get_users()
