@@ -34,6 +34,8 @@ When starting the docker container, the following environment variables are made
 | DV_URL |       |
 | REDIS_SERVICE_HOST |       |
 | REDIS_SERVICE_PORT |       |
+| STOCK_XL_PATH | OPTIONAL; used in the stock quote demo.  Is the path to an xlsx file with a "symbol" column, listing the stocks that we want to get quotes for |
+| FMP_API_KEY | OPTIONAL; used in the stock quote demo.  API key to financialmodelingprep.com api |
 
 The process execution is event-driven : triggering events are sent on a local Redis queue; the executable should 
 subscribe to that queue and handle events appropriately.
