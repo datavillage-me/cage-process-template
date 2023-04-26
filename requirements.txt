@@ -1,3 +1,4 @@
-git+https://github.com/datavillage-me/dv-utils@main#egg=dv-utils
+#git+https://github.com/datavillage-me/dv-utils@main#egg=dv-utils
+dv-utils
 pandas
 openpyxl
