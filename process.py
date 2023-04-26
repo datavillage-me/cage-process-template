@@ -3,7 +3,7 @@ import time
 import requests
 import os
 import pandas as pd
-from dv_utils import default_settings, Client
+from dv_utils import default_settings, Client, audit_log 
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +25,7 @@ def event_processor(evt: dict):
 
         evt_type =evt.get("type", "")
         if(evt_type == "QUOTE"):
+           audit_log("received a quote event", evt=evt_type)
            logger.info(f"use the update quote event processor")
            update_quote_event_processor(evt)
         else:
