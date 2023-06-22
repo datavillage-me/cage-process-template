@@ -17,52 +17,37 @@ logging.basicConfig(
 def event_processor(evt: dict):
     """
     Process an incoming event
+    Exception raised by this function are handled by the default event listener and reported in the logs.
     """
-    start = time.time()
+    
+    logger.info(f"Processing event {evt}")
 
-    try:
-        logger.info(f"Processing event {evt}")
-
-        evt_type =evt.get("type", "")
-        if(evt_type == "QUOTE"):
-           audit_log("received a quote event", evt=evt_type)
-           logger.info(f"use the update quote event processor")
-           update_quote_event_processor(evt)
-        else:
-           logger.info(f"Unhandled message type, use the generic event processor")
-           generic_event_processor(evt)
-
-    # pylint: disable=broad-except
-    except Exception as err:
-        logger.error(f"Failed processing event: {err}")
-    finally:
-        logger.info(f"Processed event in {time.time() - start:.{3}f}s")
-
+    # dispatch events according to their type
+    evt_type =evt.get("type", "")
+    if(evt_type == "QUOTE"):
+        # use the QUOTE event processor dedicated function
+        logger.info(f"use the update quote event processor")
+        update_quote_event_processor(evt)
+    else:
+        # use the GENERIC event processor function, that basicaly does nothing
+        logger.info(f"Unhandled message type, use the generic event processor")
+        generic_event_processor(evt)
 
 
 def generic_event_processor(evt: dict):
-   client = Client()
-
-   # Use userIds provided in the event, or get all active users for this application
-   user_ids = evt.get("userIds", []) or client.get_users()   
-
-   logger.info(f"Processing {len(user_ids)} users")
-   for user_id in user_ids:
-      try:
-         # retrieve data graph for user
-         # user_data = client.get_data(user_id) or {}
-
-         # for the sake of this example, write some RDF with a dummy 0 count into the user's pod
-         client.write_results(user_id, "inferences", f"<https://datavillage.me/{user_id}> <https://datavillage.me/count> 0" )
-
-      # pylint: disable=broad-except
-      except Exception as err:
-         logger.warning(f"Failed to process user {user_id} : {err}")
+    pass
 
 
 def update_quote_event_processor(evt: dict):
    client = Client()
 
+   # push an audit log to reccord for a long duration (6months) that a quote event has been received and processed
+   audit_log("received a quote event", evt=evt_type)
+
+
+   # retrieve environment variables to handle the quote events
+   # the path of the file containg the stock market shares to get quote for
+   # the authentication key needed to connect to the FMP financial API
    STOCK_XL_PATH = os.environ.get("STOCK_XL_PATH", "")
    FMP_API_KEY = os.environ.get("FMP_API_KEY", "")
    if(not STOCK_XL_PATH):
@@ -80,11 +65,20 @@ def update_quote_event_processor(evt: dict):
    stock_quotes = stock_response.json()
 
    # merge quotes with symbols in a unified dataframe and possibly save it to file
+   # instead of saving the results to a file we would also have pushed the computed data directly to an output API, a database or deltashare service.
+   # to keep the template demo simple, we'll just output an excel file
    stocks = stocks.join(pd.DataFrame(stock_quotes).set_index("symbol") )
    try:
+       # store the output file in /resources/outputs directory, to make it available for download later through the collaboration space APIs
        stocks.to_excel("/resources/outputs/stocks.xlsx")
    except:
       pass
+  
+
+
+   # The rest of the code bellow is only necessary if you want to push results in the SOLID pods of the customers associated with this collaboration space
+   # Not all use cases requires interaction with the end users, so you can ignore what is bellow if you are not interested in writting to the user's SOLID pod
+
 
    # prepare rdf file with the quotes following schema.org onthology
    rdf_content = "".join([f"""
@@ -98,10 +92,10 @@ def update_quote_event_processor(evt: dict):
    """ for r in stocks.reset_index().to_dict("records")])
    logger.info(f"Generated RDF content:\n{rdf_content}")
 
-   # Use userIds provided in the event, or get all active users for this application
+   # Use userIds provided in the event, or get all active users for this collaboration
    user_ids = evt.get("userIds",[]) or client.get_users()
 
-   # Save the stock quotes in the data vault of all the users
+   # Save the stock quotes in the data vault/pod of the concerned users
    logger.info(f"Processing {len(user_ids)} users")
    for user_id in user_ids:
       try:
