@@ -68,7 +68,8 @@ The events are of the form
 {
     userIds: <optional list of user IDs>,
     jobId: <ID of the job that this event is bound to>,
-    trigger: <type of event>,
+    type: <type of event>,
+    data: <optional object with whatever additional data>,
 }
 ```
 
