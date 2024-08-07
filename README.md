@@ -1,6 +1,6 @@
 # Template for a process to be deployed in the data cage
 
-This is a sample project with a representative set of resources to deploy a data processing algorithm in a Datavillage cage.
+This is a sample project with a representative set of resources to deploy a confidential workload.
 
 __TL;DR__ : clone this repo and edit the `process.py` file
 

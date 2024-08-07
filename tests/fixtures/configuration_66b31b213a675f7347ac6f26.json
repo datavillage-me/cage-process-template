@@ -1,0 +1,9 @@
+{
+  "connectorKeys":{
+    "description":"One file per model. One file demo",
+    "url":"https://github.com/datavillage-me/cage-process-template/raw/main/data/customers-list1-encrypted.parquet",
+    "file_format":"parquet",
+    "encryption_key":"8SX9rT9VSHohHgEz2qRer5oCoid2RUAS"
+  }
+}
+  
